@@ -63,7 +63,7 @@ jobs:
       - name: Generate .SRCINFO
         run: |
           cd /tmp/aur/
-          makepkg --printsrcinfo | tee .SRCINFO
+          sudo -u builder makepkg --printsrcinfo | tee .SRCINFO
       - name: Push
         run: |
           cd /tmp/aur/
