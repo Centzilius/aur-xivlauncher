@@ -67,6 +67,8 @@ jobs:
       - name: Push
         run: |
           cd /tmp/aur/
+          git config user.email "cent@spline.de"
+          git config user.name "cent"
           git add --all
           git commit -m 'sync from github'
           git push -u origin master
