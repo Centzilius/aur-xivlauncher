@@ -78,3 +78,6 @@ jobs:
           git add --all
           git commit -m 'sync from github'
           git push -u origin master
+      - name: Cleanup SSH
+        if: always()
+        run: rm -rf /root/.ssh
