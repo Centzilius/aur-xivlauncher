@@ -59,7 +59,7 @@ jobs:
           git clone ssh://aur@aur.archlinux.org/xivlauncher.git aur
       - name: Copy files
         run: |
-          rsync -ahvP $GITHUB_WORKSPACE/aur-xivlauncher/{PKGBUILD,XIVLauncher.desktop} /tmp/aur/
+          rsync -ahvP $GITHUB_WORKSPACE/{PKGBUILD,XIVLauncher.desktop} /tmp/aur/
       - name: Generate .SRCINFO
         run: |
           cd /tmp/aur/
