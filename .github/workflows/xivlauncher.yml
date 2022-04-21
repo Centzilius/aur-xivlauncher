@@ -25,7 +25,7 @@ jobs:
       - name: Build package
         run: |
           cd /home/builder/workspace
-          sudo -u builder makepkg -scf
+          sudo -u builder makepkg -scf --noconfirm
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
