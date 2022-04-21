@@ -22,7 +22,7 @@ jobs:
       - name: Prepare workspace
         run: |
           mkdir /home/builder/workspace
-          rsync -ahvP ${{ github.workspace}}/ /home/builder/workspace
+          rsync -ahvP /__w/aur-xivlauncher/aur-xivlauncher/ /home/builder/workspace/
       - name: Build package
         run:
           cd /home/builder/workspace
