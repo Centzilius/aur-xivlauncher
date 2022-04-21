@@ -66,8 +66,10 @@ jobs:
           rsync -ahvP $GITHUB_WORKSPACE/{PKGBUILD,XIVLauncher.desktop} /tmp/aur/
       - name: Generate .SRCINFO
         run: |
+          chown -R builder:builder /tmp/aur/
           cd /tmp/aur/
           sudo -u builder makepkg --printsrcinfo | tee .SRCINFO
+          chown -R root:root /tmp/aur/
       - name: Push
         run: |
           cd /tmp/aur/
