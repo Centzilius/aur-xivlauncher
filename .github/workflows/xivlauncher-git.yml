@@ -34,3 +34,32 @@ jobs:
           name: xivlauncher
           path: /home/builder/workspace/*.pkg.tar.zst
           if-no-files-found: error
+  aur:
+    needs: build
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    container: ghcr.io/centzilius/arch-makepkg:latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Checkout AUR
+        uses: actions/checkout@v3
+        with:
+          repository: ssh://aur@aur.archlinux.org/xivlauncher.git
+          ssh-key: ${{ secrets.ssh_key }}
+          ssh-strict: false
+      - name: rename PKGBUILD
+        run: mv PKGBUILD-git PKGBUILD
+      - name: Copy files
+        run: |
+          rsync -ahvP $GITHUB_WORKSPACE/aur-xivlauncher/{PKGBUILD,XIVLauncher.desktop} $GITHUB_WORKSPACE/xivlauncher/
+      - name: Generate .SRCINFO
+        run: |
+          cd $GITHUB_WORKSPACE/xivlauncher
+          makepkg --printsrcinfo | tee .SRCINFO
+      - name: Push
+        run: |
+          cd $GITHUB_WORKSPACE/xivlauncher
+          git add --all
+          git commit -m 'sync from github'
+          git push -u origin master
