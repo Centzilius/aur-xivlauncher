@@ -21,6 +21,7 @@ jobs:
         run: |
           mkdir /home/builder/workspace
           rsync -ahvP /__w/aur-xivlauncher/aur-xivlauncher/ /home/builder/workspace/
+          chown -R builder:builder /home/builder/
       - name: Build package
         run: |
           cd /home/builder/workspace
