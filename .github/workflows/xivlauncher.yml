@@ -22,7 +22,7 @@ jobs:
           mkdir /home/builder/workspace
           rsync -ahvP /__w/aur-xivlauncher/aur-xivlauncher/ /home/builder/workspace/
       - name: Build package
-        run:
+        run: |
           cd /home/builder/workspace
           sudo -u builder makepkg -scf
       - name: Upload artifact
