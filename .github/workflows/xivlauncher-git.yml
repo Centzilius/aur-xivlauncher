@@ -1,0 +1,30 @@
+name: xivlauncher-git
+
+on:
+  push:
+    paths:
+      - PKGBUILD-git
+  pull_request:
+    branches:
+      - main
+    paths:
+      - PKGBUILD
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/centzilius/arch-makepkg:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: rename PKGBUILD
+        run: mv PKGBUILD-git PKGBUILD
+      - name: Build package
+        run: |
+          makepkg -scf
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: xivlauncher
+          path: ${{ github.workspace }}/*.pkg.tar.zst
+          if-no-files-found: error

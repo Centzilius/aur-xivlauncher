@@ -9,6 +9,7 @@ on:
       - main
     paths:
       - PKGBUILD
+  workflow_dispatch:
 
 jobs:
   build:
