@@ -19,12 +19,17 @@ jobs:
       - uses: actions/checkout@v2
       - name: rename PKGBUILD
         run: mv PKGBUILD-git PKGBUILD
-      - name: Build package
+      - name: Prepare workspace
         run: |
-          makepkg -scf
+          mkdir /home/builder/workspace
+          rsync -ahvP ${{ github.workspace}}/ /home/builder/workspace
+      - name: Build package
+        run:
+          cd /home/builder/workspace
+          sudo -u builder makepkg -scf
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: xivlauncher
-          path: ${{ github.workspace }}/*.pkg.tar.zst
+          path: /home/builder/workspace/*.pkg.tar.zst
           if-no-files-found: error
