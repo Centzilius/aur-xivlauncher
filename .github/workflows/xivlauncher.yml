@@ -1,0 +1,27 @@
+name: xivlauncher
+
+on:
+  push:
+    paths:
+      - PKGBUILD
+  pull_request:
+    branches:
+      - main
+    paths:
+      - PKGBUILD
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/centzilius/arch-makepkg:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build package
+        run: |
+          makepkg -scf
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: xivlauncher
+          path: ${{ github.workspace }}/*.pkg.tar.zst
+          if-no-files-found: error
