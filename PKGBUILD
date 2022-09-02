@@ -29,7 +29,7 @@ depends=(
     'faudio'                'lib32-faudio'
     'desktop-file-utils'    'jxrlib'
 )
-makedepends=('dotnet-sdk>=6')
+makedepends=('dotnet-sdk>=6' 'git')
 optdepends=('steam')
 options=('!strip')
 source=(
