@@ -46,6 +46,8 @@ sha512sums=(
 
 pkgver() {
     cd "${srcdir}/FFXIVQuickLauncher"
+    git config --local user.name "Allagan Software Deployment Node"
+    git config --local user.email "asdn@example.com"
     python3 ../pkgver.py
 }
 
