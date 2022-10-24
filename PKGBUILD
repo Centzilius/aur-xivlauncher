@@ -1,12 +1,12 @@
 # Maintainer: Vincent Post <cent@spline.de>
 pkgname=xivlauncher
-pkgver=1.0.1.0
-_pkgver=6246fde6b54f8c7e340057fe2d940287c437153f
+pkgver=1.0.2
+_pkgver=599241d8febafaa46c7111362560a6af361eca48
 pkgrel=1
 epoch=1
 pkgdesc="Custom Launcher for Final Fantasy XIV Online (Crossplatform rewrite)"
 arch=('x86_64')
-url='https://github.com/goatcorp/FFXIVQuickLauncher/'
+url='https://github.com/goatcorp/XIVLauncher.Core'
 license=('GPL')
 depends=(
     'aria2'
@@ -33,7 +33,7 @@ makedepends=('dotnet-sdk>=6' 'git')
 optdepends=('steam')
 options=('!strip')
 source=(
-    "FFXIVQuickLauncher::git+https://github.com/goatcorp/FFXIVQuickLauncher.git#commit=${_pkgver}"
+    "XIVLauncher.Core::git+https://github.com/goatcorp/XIVLauncher.Core.git#commit=${_pkgver}"
     "XIVLauncher.desktop"
 )
 sha512sums=(
@@ -43,7 +43,9 @@ sha512sums=(
 
 build() {
     mkdir -p "${srcdir}/build"
-    cd "${srcdir}/FFXIVQuickLauncher/src/XIVLauncher.Core/"
+    cd "${srcdir}/XIVLauncher.Core"
+    git submodule update --init --recursive
+    cd "${srcdir}/XIVLauncher.Core/src/XIVLauncher.Core/"
     dotnet publish -r linux-x64 --sc -o "${srcdir}/build" --configuration Release -p:DefineConstants=WINE_XIV_ARCH_LINUX
 }
 
@@ -51,7 +53,7 @@ package() {
     install -d "${pkgdir}/usr/bin/"
     install -d "${pkgdir}/opt/XIVLauncher/"
     install -D -m644 "${srcdir}/XIVLauncher.desktop" "${pkgdir}/usr/share/applications/XIVLauncher.desktop"
-    install -D -m644 "${srcdir}/FFXIVQuickLauncher/src/XIVLauncher.Core/Resources/logo.png" "${pkgdir}/usr/share/pixmaps/xivlauncher.png"
+    install -D -m644 "${srcdir}/XIVLauncher.Core/src/XIVLauncher.Core/Resources/logo.png" "${pkgdir}/usr/share/pixmaps/xivlauncher.png"
     cp -r "${srcdir}/build/." "${pkgdir}/opt/XIVLauncher/"
     ln -s ../../opt/XIVLauncher/XIVLauncher.Core "${pkgdir}/usr/bin/XIVLauncher.Core"
 }
