@@ -34,26 +34,31 @@ options=('!strip')
 provides=("xivlauncher=${pkgver}")
 conflicts=("xivlauncher")
 source=(
+    "XIVLauncher.Core::git+https://github.com/goatcorp/XIVLauncher.Core.git"
     "FFXIVQuickLauncher::git+https://github.com/goatcorp/FFXIVQuickLauncher.git"
-    "pkgver.py"
     "XIVLauncher.desktop"
 )
 sha512sums=(
     'SKIP'
-    'ee292d539505151e4d17aa51e3af1981e69621245b419b0726d3cd5bbb35a7bb578bafd3ca779e59f65a8b1fec405c9d19711e91be92d447cc345a1a5a5cd8a2'
+    'SKIP'
     '5ac774f858d4015c59e6758e2a706b93e822bca9c046ed87210deabc141ac101020d2654fbcf8314f9409a4cfcf921d1e26ec0a3b0beab02d1bcd045fb6e6f14'
 )
 
 pkgver() {
-    cd "${srcdir}/FFXIVQuickLauncher"
-    git config --local user.name "Allagan Software Deployment Node"
-    git config --local user.email "asdn@example.com"
-    python3 ../pkgver.py
+    cd "${srcdir}/XIVLauncher.Core"
+    git describe --long | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+    cd "${srcdir}/XIVLauncher.Core"
+    git submodule init
+    git config submodule.lib/FFXIVQuickLauncher.url "${srcdir}/FFXIVQuickLauncher"
+    git submodule update
 }
 
 build() {
     mkdir -p "${srcdir}/build"
-    cd "${srcdir}/FFXIVQuickLauncher/src/XIVLauncher.Core/"
+    cd "${srcdir}/XIVLauncher.Core/src/XIVLauncher.Core/"
     dotnet publish -r linux-x64 --sc -o "${srcdir}/build" --configuration Release -p:DefineConstants=WINE_XIV_ARCH_LINUX
 }
 
