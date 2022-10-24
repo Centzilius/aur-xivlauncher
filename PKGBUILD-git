@@ -52,6 +52,7 @@ pkgver() {
 prepare() {
     cd "${srcdir}/XIVLauncher.Core"
     git submodule init
+    git config protocol.file.allow always
     git config submodule.lib/FFXIVQuickLauncher.url "${srcdir}/FFXIVQuickLauncher"
     git submodule update
 }
