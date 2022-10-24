@@ -53,7 +53,7 @@ package() {
     install -d "${pkgdir}/usr/bin/"
     install -d "${pkgdir}/opt/XIVLauncher/"
     install -D -m644 "${srcdir}/XIVLauncher.desktop" "${pkgdir}/usr/share/applications/XIVLauncher.desktop"
-    install -D -m644 "${srcdir}/XIVLauncher.Core/src/XIVLauncher.Core/Resources/logo.png" "${pkgdir}/usr/share/pixmaps/xivlauncher.png"
+    install -D -m644 "${srcdir}/XIVLauncher.Core/misc/linux_distrib/512.png" "${pkgdir}/usr/share/pixmaps/xivlauncher.png"
     cp -r "${srcdir}/build/." "${pkgdir}/opt/XIVLauncher/"
     ln -s ../../opt/XIVLauncher/XIVLauncher.Core "${pkgdir}/usr/bin/XIVLauncher.Core"
 }
