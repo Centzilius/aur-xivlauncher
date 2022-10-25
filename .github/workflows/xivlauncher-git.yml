@@ -67,7 +67,7 @@ jobs:
         run: mv PKGBUILD-git PKGBUILD
       - name: Copy files
         run: |
-          rsync -ahvP $GITHUB_WORKSPACE/{PKGBUILD,XIVLauncher.desktop,pkgver.py} /tmp/aur/
+          rsync -ahvP $GITHUB_WORKSPACE/{PKGBUILD,XIVLauncher.desktop} /tmp/aur/
       - name: Generate .SRCINFO
         run: |
           chown -R builder:builder /tmp/aur/
