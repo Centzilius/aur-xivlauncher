@@ -44,6 +44,11 @@ sha512sums=(
     '5ac774f858d4015c59e6758e2a706b93e822bca9c046ed87210deabc141ac101020d2654fbcf8314f9409a4cfcf921d1e26ec0a3b0beab02d1bcd045fb6e6f14'
 )
 
+prepare() {
+    cd "${srcdir}/XIVLauncher.Core"
+    git submodule update --init --recursive
+}
+
 pkgver() {
     cd "${srcdir}/XIVLauncher.Core"
     git config --local user.name "Allagan Software Deployment Node"
@@ -53,8 +58,6 @@ pkgver() {
 
 build() {
     mkdir -p "${srcdir}/build"
-    cd "${srcdir}/XIVLauncher.Core"
-    git submodule update --init --recursive
     cd "${srcdir}/XIVLauncher.Core/src/XIVLauncher.Core/"
     dotnet publish -r linux-x64 --sc -o "${srcdir}/build" --configuration Release -p:DefineConstants=WINE_XIV_ARCH_LINUX
 }
