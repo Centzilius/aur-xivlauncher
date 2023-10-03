@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/centzilius/arch-makepkg:latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: rename PKGBUILD
         run: mv PKGBUILD-git PKGBUILD
       - name: Prepare workspace
@@ -51,7 +51,7 @@ jobs:
     container: ghcr.io/centzilius/arch-makepkg:latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout AUR
         run: |
           cd /root
