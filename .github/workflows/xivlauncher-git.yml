@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - PKGBUILD-git
+      - .github/workflows/xivlauncher-git.yml
   pull_request:
     branches:
       - main
@@ -67,7 +68,7 @@ jobs:
         run: mv PKGBUILD-git PKGBUILD
       - name: Copy files
         run: |
-          rsync -ahvP $GITHUB_WORKSPACE/{PKGBUILD,XIVLauncher.desktop} /tmp/aur/
+          rsync -ahvP $GITHUB_WORKSPACE/{PKGBUILD,XIVLauncher.desktop,xivlauncher-core,openssl_fix.cnf} /tmp/aur/
       - name: Generate .SRCINFO
         run: |
           chown -R builder:builder /tmp/aur/
