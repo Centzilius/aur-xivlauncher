@@ -1,7 +1,7 @@
 # Maintainer: Vincent Post <cent@spline.de>
 pkgname=xivlauncher
 pkgver=1.0.8
-pkgrel=2
+pkgrel=3
 epoch=1
 pkgdesc="Custom Launcher for Final Fantasy XIV Online (Crossplatform rewrite)"
 arch=('x86_64')
@@ -62,6 +62,8 @@ package() {
     install -D -m644 "${srcdir}/XIVLauncher.desktop" "${pkgdir}/usr/share/applications/XIVLauncher.desktop"
     install -D -m644 "${srcdir}/XIVLauncher.Core/misc/linux_distrib/512.png" "${pkgdir}/usr/share/pixmaps/xivlauncher.png"
     install -D -m644 "${srcdir}/openssl_fix.cnf" "${pkgdir}/opt/XIVLauncher/openssl_fix.cnf"
+    chmod 644 "${srcdir}/build/libcimgui.so"
+    chmod 644 "${srcdir}/build/libskeychain.so"
     cp -r "${srcdir}/build/." "${pkgdir}/opt/XIVLauncher/"
     ln -s ../../opt/XIVLauncher/XIVLauncher.Core "${pkgdir}/usr/bin/XIVLauncher.Core"
     install -D -m755  "${srcdir}/xivlauncher-core" "${pkgdir}/usr/bin/xivlauncher-core"
