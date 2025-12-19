@@ -40,7 +40,7 @@ jobs:
           cd /home/builder/workspace
           mv *.pkg.tar.zst xivlauncher-git.pkg.tar.zst
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: xivlauncher
           path: /home/builder/workspace/*.pkg.tar.zst
