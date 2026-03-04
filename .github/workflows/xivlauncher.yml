@@ -21,8 +21,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/centzilius/arch-makepkg:latest
+    container: archlinux:latest
     steps:
+      - name: Prepare container
+        run: |
+          echo -e "\n[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
+          pacman-key --init
+          pacman -Sy --noconfirm --needed archlinux-keyring
+          pacman -Syu --noconfirm base-devel git rsync openssh
+          useradd -m -s /bin/bash builder
+          echo "builder ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
       - uses: actions/checkout@v6
       - name: Prepare workspace
         run: |
@@ -47,8 +55,16 @@ jobs:
     needs: build
     if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event.inputs.aur == 'true' }}
     runs-on: ubuntu-latest
-    container: ghcr.io/centzilius/arch-makepkg:latest
+    container: archlinux:latest
     steps:
+      - name: Prepare container
+        run: |
+          echo -e "\n[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
+          pacman-key --init
+          pacman -Sy --noconfirm --needed archlinux-keyring
+          pacman -Syu --noconfirm base-devel git rsync openssh
+          useradd -m -s /bin/bash builder
+          echo "builder ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
       - name: Checkout repo
         uses: actions/checkout@v6
       - name: Checkout AUR
