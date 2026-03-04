@@ -4,12 +4,14 @@ on:
   push:
     paths:
       - PKGBUILD
+      - PKGBUILD-git
       - .github/workflows/xivlauncher.yml
   pull_request:
     branches:
       - main
     paths:
       - PKGBUILD
+      - PKGBUILD-git
   workflow_dispatch:
     inputs:
       aur:
@@ -20,60 +22,96 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        variant:
+          - xivlauncher
+          - xivlauncher-git
     runs-on: ubuntu-latest
-    container: ghcr.io/centzilius/arch-makepkg:latest
+    container: archlinux:latest
     steps:
+      - name: Prepare container
+        run: |
+          echo -e "\n[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
+          pacman-key --init
+          pacman -Sy --noconfirm --needed archlinux-keyring
+          pacman -Syu --noconfirm base-devel git rsync openssh
+          useradd -m -s /bin/bash builder
+          echo "builder ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
       - uses: actions/checkout@v6
+      - name: Use git PKGBUILD
+        if: matrix.variant == 'xivlauncher-git'
+        run:
+          mv PKGBUILD{-git,}
       - name: Prepare workspace
         run: |
           mkdir /home/builder/workspace
           rsync -ahvP /__w/aur-xivlauncher/aur-xivlauncher/ /home/builder/workspace/
           chown -R builder:builder /home/builder/
       - name: Build package
+        working-directory: /home/builder/workspace
         run: |
-          cd /home/builder/workspace
           sudo -u builder makepkg -scf --noconfirm
+          sudo -u builder makepkg --printsrcinfo | tee .SRCINFO
       - name: Rename artifact
-        run: |
-          cd /home/builder/workspace
-          mv *.pkg.tar.zst xivlauncher.pkg.tar.zst
+        working-directory: /home/builder/workspace
+        run: mv *.pkg.tar.zst ${{ matrix.variant }}.pkg.tar.zst
       - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:
-          name: xivlauncher
-          path: /home/builder/workspace/*.pkg.tar.zst
+          name: ${{ matrix.variant }}
+          path: |
+            /home/builder/workspace/*.pkg.tar.zst
+            /home/builder/workspace/.SRCINFO
           if-no-files-found: error
+          include-hidden-files: true
   aur:
     needs: build
+    strategy:
+      matrix:
+        variant:
+          - xivlauncher
+          - xivlauncher-git
     if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event.inputs.aur == 'true' }}
     runs-on: ubuntu-latest
-    container: ghcr.io/centzilius/arch-makepkg:latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
+        with:
+          path: 'github'
+      - name: Use git PKGBUILD
+        if: matrix.variant == 'xivlauncher-git'
+        working-directory: "${{ github.workspace }}/github"
+        run:
+          mv PKGBUILD{-git,}
+      - name: Prepare SSH
+        run: |
+          mkdir -p "$HOME"/.ssh
+          chmod 700 "$HOME"/.ssh
+          ssh-keyscan aur.archlinux.org >> "$HOME"/.ssh/known_hosts
+          echo "${{ secrets.ssh_key }}" > "$HOME"/.ssh/id_ed25519
+          chmod 400 "$HOME"/.ssh/*
+          ssh-keygen -y -f "$HOME"/.ssh/id_ed25519 > "$HOME"/.ssh/id_ed25519.pub
       - name: Checkout AUR
         run: |
-          cd /root
-          mkdir -p .ssh
-          chmod 700 .ssh
-          ssh-keyscan aur.archlinux.org >> /root/.ssh/known_hosts
-          echo "${{ secrets.ssh_key }}" > /root/.ssh/id_ed25519
-          chmod 400 /root/.ssh/*
-          ssh-keygen -y -f /root/.ssh/id_ed25519 > /root/.ssh/id_ed25519.pub
-          cd /tmp
-          git clone ssh://aur@aur.archlinux.org/xivlauncher.git aur
+          git clone ssh://aur@aur.archlinux.org/${{ matrix.variant }}.git "$GITHUB_WORKSPACE"/aur
+      - name: Download (.SRCINFO) artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ matrix.variant }}
       - name: Copy files
         run: |
-          rsync -ahvP $GITHUB_WORKSPACE/{PKGBUILD,XIVLauncher.desktop,xivlauncher-core} /tmp/aur/
-      - name: Generate .SRCINFO
+          rsync -ahvP "$GITHUB_WORKSPACE"/github/{PKGBUILD,XIVLauncher.desktop,xivlauncher-core} "$GITHUB_WORKSPACE"/aur/
+          rsync -ahvP "$GITHUB_WORKSPACE"/.SRCINFO "$GITHUB_WORKSPACE"/aur/.SRCINFO
+      - name: Check git status
+        id: gitstatus
+        working-directory: "${{ github.workspace }}/aur"
         run: |
-          chown -R builder:builder /tmp/aur/
-          cd /tmp/aur/
-          sudo -u builder makepkg --printsrcinfo | tee .SRCINFO
-          chown -R root:root /tmp/aur/
+          test -z "$(git status --porcelain)" && echo "clean=1" >> "$GITHUB_OUTPUT" || echo "clean=0" >> "$GITHUB_OUTPUT"
       - name: Push
+        if: success() && steps.gitstatus.outputs.clean == '0'
+        working-directory: "${{ github.workspace }}/aur"
         run: |
-          cd /tmp/aur/
           git config user.email "cent@spline.de"
           git config user.name "cent"
           git add --all
@@ -81,4 +119,4 @@ jobs:
           git push -u origin master
       - name: Cleanup SSH
         if: always()
-        run: rm -rf /root/.ssh
+        run: rm -rf "$HOME"/.ssh
