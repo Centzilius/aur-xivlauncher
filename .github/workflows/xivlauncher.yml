@@ -83,9 +83,15 @@ jobs:
         run: |
           rsync -ahvP "$GITHUB_WORKSPACE"/github/{PKGBUILD,XIVLauncher.desktop,xivlauncher-core} "$GITHUB_WORKSPACE"/aur/
           rsync -ahvP "$GITHUB_WORKSPACE"/.SRCINFO "$GITHUB_WORKSPACE"/aur/.SRCINFO
-      - name: Push
+      - name: Check git status
+        id: gitstatus
+        working-directory: "${{ github.workspace }}/aur"
         run: |
-          cd "$GITHUB_WORKSPACE"/aur
+          test -z "$(git status --porcelain)" && echo "clean=1" >> "$GITHUB_OUTPUT" || echo "clean=0" >> "$GITHUB_OUTPUT"
+      - name: Push
+        if: success() && steps.gitstatus.outputs.clean == '0'
+        working-directory: "${{ github.workspace }}/aur"
+        run: |
           git config user.email "cent@spline.de"
           git config user.name "cent"
           git add --all
