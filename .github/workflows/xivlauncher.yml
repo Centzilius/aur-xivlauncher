@@ -4,12 +4,14 @@ on:
   push:
     paths:
       - PKGBUILD
+      - PKGBUILD-git
       - .github/workflows/xivlauncher.yml
   pull_request:
     branches:
       - main
     paths:
       - PKGBUILD
+      - PKGBUILD-git
   workflow_dispatch:
     inputs:
       aur:
@@ -20,6 +22,11 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        variant:
+          - xivlauncher
+          - xivlauncher-git
     runs-on: ubuntu-latest
     container: archlinux:latest
     steps:
@@ -32,6 +39,10 @@ jobs:
           useradd -m -s /bin/bash builder
           echo "builder ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
       - uses: actions/checkout@v6
+      - name: Use git PKGBUILD
+        if: matrix.variant == 'xivlauncher-git'
+        run:
+          mv PKGBUILD{-git,}
       - name: Prepare workspace
         run: |
           mkdir /home/builder/workspace
@@ -45,11 +56,11 @@ jobs:
       - name: Rename artifact
         run: |
           cd /home/builder/workspace
-          mv *.pkg.tar.zst xivlauncher.pkg.tar.zst
+          mv *.pkg.tar.zst ${{ matrix.variant }}.pkg.tar.zst
       - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:
-          name: xivlauncher
+          name: ${{ matrix.variant }}
           path: |
             /home/builder/workspace/*.pkg.tar.zst
             /home/builder/workspace/.SRCINFO
@@ -57,6 +68,11 @@ jobs:
           include-hidden-files: true
   aur:
     needs: build
+    strategy:
+      matrix:
+        variant:
+          - xivlauncher
+          - xivlauncher-git
     if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event.inputs.aur == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -64,6 +80,11 @@ jobs:
         uses: actions/checkout@v6
         with:
           path: 'github'
+      - name: Use git PKGBUILD
+        if: matrix.variant == 'xivlauncher-git'
+        working-directory: "${{ github.workspace }}/github"
+        run:
+          mv PKGBUILD{-git,}
       - name: Prepare SSH
         run: |
           mkdir -p "$HOME"/.ssh
@@ -74,11 +95,11 @@ jobs:
           ssh-keygen -y -f "$HOME"/.ssh/id_ed25519 > "$HOME"/.ssh/id_ed25519.pub
       - name: Checkout AUR
         run: |
-          git clone ssh://aur@aur.archlinux.org/xivlauncher.git "$GITHUB_WORKSPACE"/aur
+          git clone ssh://aur@aur.archlinux.org/${{ matrix.variant }}.git "$GITHUB_WORKSPACE"/aur
       - name: Download (.SRCINFO) artifact
         uses: actions/download-artifact@v8
         with:
-          name: xivlauncher
+          name: ${{ matrix.variant }}
       - name: Copy files
         run: |
           rsync -ahvP "$GITHUB_WORKSPACE"/github/{PKGBUILD,XIVLauncher.desktop,xivlauncher-core} "$GITHUB_WORKSPACE"/aur/
