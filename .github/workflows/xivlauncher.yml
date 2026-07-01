@@ -38,7 +38,7 @@ jobs:
           pacman -Syu --noconfirm base-devel git rsync openssh
           useradd -m -s /bin/bash builder
           echo "builder ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use git PKGBUILD
         if: matrix.variant == 'xivlauncher-git'
         run:
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: 'github'
       - name: Use git PKGBUILD
